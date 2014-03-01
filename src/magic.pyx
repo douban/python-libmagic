@@ -33,17 +33,30 @@ MAGIC_NO_CHECK_BUILTIN = NO_CHECK_BUILTIN = 4173824
 
 cdef class Magic:
 
-    cdef cmagic.magic_set * _c_magic_t
+    cdef cmagic.magic_set *_c_magic_t
 
     def __cinit__(self):
         self._c_magic_t = NULL
 
     cdef open(self, int flags):
         self._c_magic_t = cmagic.magic_open(flags)
-        cmagic.magic_load(self._c_magic_t, NULL)
 
-    cdef load(self, char *path):
+    cdef _load(self, char *path):
         cmagic.magic_load(self._c_magic_t, path)
+
+    def load(self, path):
+        self._load(path)
+
+    def from_file(self, object buf):
+        cdef size_t c_buf_len = len(buf)
+        cdef const char *c_buf = buf
+        cdef const char *r = NULL
+        r = cmagic.magic_file(self._c_magic_t, c_buf)
+        if r is not NULL:
+            try: # attempt python3 approach first
+                return str(r, 'utf-8')
+            except:
+                return r
 
     def from_buffer(self, object buf):
         """
@@ -52,8 +65,8 @@ cdef class Magic:
         is set. A call to errno() will return the numeric error code.
         """
         cdef size_t c_buf_len = len(buf)
-        cdef const char * c_buf = buf
-        cdef const char * r = NULL
+        cdef const char *c_buf = buf
+        cdef const char *r = NULL
         r = cmagic.magic_buffer(self._c_magic_t, c_buf, c_buf_len)
         if r is not NULL:
             try: # attempt python3 approach first
@@ -67,6 +80,9 @@ cdef class Magic:
 
 
 def open(flags):
-    magic = Magic()
-    magic.open(flags)
-    return magic
+    m = Magic()
+    m.open(flags)
+    return m
+
+
+__version__ = "0.0.1"

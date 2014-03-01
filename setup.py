@@ -10,6 +10,8 @@ if 'setuptools.extension' in sys.modules:
     m = sys.modules['setuptools.extension']
     m.Extension.__dict__ = m._Extension.__dict__
 
+PYTHON3K = sys.version_info[0] > 2
+
 cwd = os.path.dirname(os.path.realpath(__file__))
 vendor_path = os.path.join(cwd, 'vendor')
 
@@ -84,15 +86,17 @@ setup(
     author_email='xutao881001@gmail.com',
     setup_requires=['setuptools_cython'],
     install_requires=['cython>=0.20'],
-    ext_modules=[Extension("magic",
+    ext_modules=[Extension("_magic",
                            ["src/magic.pyx"],
                            include_dirs=['vendor/include'],
                            library_dirs=['vendor/lib'],
                            libraries=["magic_embed", "z_embed"])],
-    py_modules=['magic'],
+    py_modules=['hamish'],
     packages=find_packages(),
     package_data={'': ['misc/magic.mgc']},
     include_package_data=True,
     zip_safe=False,
+    tests_require=['mock'] + [] if PYTHON3K else ['unittest2'],
+    test_suite="tests" if PYTHON3K else "unittest2.collector",
     data_files=[('misc', ['vendor/share/misc/magic.mgc'])],
 )
