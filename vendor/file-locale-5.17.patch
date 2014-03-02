@@ -1,0 +1,18 @@
+--- src/softmagic.c	2014-03-02 11:40:35.000000000 +0800
++++ src/softmagic-patched.c	2014-03-02 11:40:21.000000000 +0800
+@@ -2043,6 +2043,7 @@
+ 			return 0;
+ 
+ 		l = 0;
++	(void)setlocale(LC_CTYPE, "C");
+ 		rc = regcomp(&rx, m->value.s,
+ 		    REG_EXTENDED|REG_NEWLINE|
+ 		    ((m->str_flags & STRING_IGNORE_CASE) ? REG_ICASE : 0));
+@@ -2090,6 +2091,7 @@
+ 			}
+ 			regfree(&rx);
+ 		}
++	(void)setlocale(LC_CTYPE, "");
+ 		if (v == (uint64_t)-1)
+ 			return -1;
+ 		break;

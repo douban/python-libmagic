@@ -41,20 +41,20 @@ class TestHamish(unittest.TestCase):
             self.assertEqual(type, 'python 2.4 byte-compiled')
 
     # FIXME: always None ?
-    #def test_txt(self):
-    #    with open(os.path.join(PATH, 'files', 'text.txt')) as f:
-    #        b = f.read()
-    #        type = hamish.from_buffer(b, mime=True)
-    #        self.assertEqual(type, 'text/plain')
-    #        type = hamish.from_buffer(b)
-    #        self.assertEqual(type, 'PDF document, version 1.2')
+    def test_txt(self):
+        with open(os.path.join(PATH, 'files', 'text.txt')) as f:
+            b = f.read()
+            type = hamish.from_buffer(b, mime=True)
+            self.assertEqual(type, 'text/plain')
+            type = hamish.from_buffer(b)
+            self.assertEqual(type, 'ASCII text')
 
-    #    with open(os.path.join(PATH, 'files', 'text-iso8859-1.txt')) as f:
-    #        b = f.read()
-    #        type = hamish.from_buffer(b, mime=True)
-    #        self.assertEqual(type, 'text/plain')
-    #        type = hamish.from_buffer(b)
-    #        self.assertEqual(type, 'PDF document, version 1.2')
+        with open(os.path.join(PATH, 'files', 'text-iso8859-1.txt')) as f:
+            b = f.read()
+            type = hamish.from_buffer(b, mime=True)
+            self.assertEqual(type, 'text/plain')
+            type = hamish.from_buffer(b)
+            self.assertEqual(type, 'ISO-8859 text')
 
     def test_lambda(self):
         with open(os.path.join(PATH, 'files', b'\xce\xbb')) as f:

@@ -33,6 +33,14 @@ libmagic_path = os.path.join(vendor_path, 'file-5.17')
 os.chdir(libmagic_path)
 
 # build libmagic
+popen = Popen(['patch -p0 < ../file-locale-5.17.patch'],
+              shell=True, stdout=PIPE, stderr=PIPE)
+popen.wait()
+stdoutdata, stderrdata = popen.communicate()
+if popen.returncode != 0:
+    print(stderrdata)
+    sys.exit()
+
 popen = Popen(['./configure', '--prefix=%s' % vendor_path, '--disable-shared',
                '--enable-static', '--with-pic'],
               stdout=PIPE, stderr=PIPE)
