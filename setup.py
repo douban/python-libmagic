@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import tarfile
 from subprocess import Popen, PIPE
 from setuptools import setup, Extension, find_packages
 
@@ -15,67 +16,46 @@ PYTHON3K = sys.version_info[0] > 2
 cwd = os.path.dirname(os.path.realpath(__file__))
 vendor_path = os.path.join(cwd, 'vendor')
 
+def excute(command_list, shell=False, wait=False):
+    popen = Popen(command_list, stdout=PIPE, stderr=PIPE, shell=shell)
+    if wait:
+        popen.wait()
+    stdoutdata, stderrdata = popen.communicate()
+    if popen.returncode != 0:
+        print(stderrdata)
+        sys.exit()
+
+def extract(file):
+    t = tarfile.open(file, mode='r:gz')
+    t.extractall()
+
 os.chdir(vendor_path)
 
-popen = Popen(['tar', '-zxvf', 'file-5.17.tar.gz'], stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+# extract file
+extract('file-5.17.tar.gz')
 
-popen = Popen(['tar', '-zxvf', 'zlib-1.2.8.tar.gz'], stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+# extract zlib
+extract('zlib-1.2.8.tar.gz')
 
 libmagic_path = os.path.join(vendor_path, 'file-5.17')
 os.chdir(libmagic_path)
 
 # build libmagic
-popen = Popen(['patch -p0 < ../file-locale-5.17.patch'],
-              shell=True, stdout=PIPE, stderr=PIPE)
-popen.wait()
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+excute(['patch -p0 < ../file-locale-5.17.patch'], shell=True, wait=True)
 
-popen = Popen(['./configure', '--prefix=%s' % vendor_path, '--disable-shared',
-               '--enable-static', '--with-pic'],
-              stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+excute(['./configure', '--prefix=%s' % vendor_path, '--disable-shared',
+         '--enable-static', '--with-pic'])
 
-popen = Popen(['make', '-C', 'src', 'install'], stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+excute(['make', '-C', 'src', 'install'])
 
-popen = Popen(['make', '-C', 'magic', 'install'], stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+excute(['make', '-C', 'magic', 'install'])
 
 # build libz
 libz_path = os.path.join(vendor_path, 'zlib-1.2.8')
 os.chdir(libz_path)
-popen = Popen(['./configure', '--prefix=%s' % vendor_path, '--static'],
-              stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+excute(['./configure', '--prefix=%s' % vendor_path, '--static'])
 
-popen = Popen(['make', 'install'], stdout=PIPE, stderr=PIPE)
-stdoutdata, stderrdata = popen.communicate()
-if popen.returncode != 0:
-    print(stderrdata)
-    sys.exit()
+excute(['make', 'install'])
 
 # prepare embed lib
 os.rename(os.path.join(vendor_path, 'lib', 'libmagic.a'),
