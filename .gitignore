@@ -8,3 +8,4 @@ vendor/*
 !vendor/*.tar.gz
 !vendor/*.patch
 src/magic.c
+!tests/files/*
